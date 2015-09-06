@@ -1,0 +1,37 @@
+<openerp>
+    <data>
+        <record id="view_omniship_sale_quote_form" model="ir.ui.view">
+            <field name="name">Shipping Quote Form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form" />
+            <field name="arch" type="xml">
+		<button name="invoice_recreate" position="before" >
+		    <button name="create_mage_cart_shipping_quote" type="object" string="Get Shipping Quotes" />
+<!--		    <button name="get_shipping_quotes" type="object" string="Get Shipping Quotes" /> -->
+
+		</button>
+	    </field>
+	</record>
+        <record id="view_sale_quote_detail_form" model="ir.ui.view">
+            <field name="name">Sale Quote Details Form</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="mage2odoo.view_mage_order_form" />
+            <field name="arch" type="xml">
+		<group name="carrier" position="after">
+		    <group name="quotes" string="Rates">
+			<field name="rate_quotes" widget="one2many_list" nolabel="1">
+			    <tree string="">
+			        <button string="Add" type="object" name="select_shipping_quote" />
+				<field name="sequence" invisible="1" />
+				<field name="carrier" />
+				<field name="name" />
+			        <field name="delivery_method" invisible="1"/>
+			        <field name="cost" widget="symbol" />
+			    </tree>
+			</field>
+		    </group>
+		</group>
+	    </field>
+	</record>
+    </data>
+</openerp>
