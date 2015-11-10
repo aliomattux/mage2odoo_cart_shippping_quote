@@ -38,13 +38,7 @@ class SaleOrder(osv.osv):
 	return customer_data
 
 
-    def get_magento_region_id(self, cr, uid, country_id, state_name):
-	with API(url, username, password) as mage_api:
-	    region_id = mage_api.call('sales_order.getregionid', [country_id, state_name])
-	    return region_id
-
-
-    def prepare_cart_shipping_data(self, cr, uid, address, context=None):
+    def prepare_cart_shipping_data(self, cr, uid, integrator_obj, credentials, address, context=None):
 	shipping_data = {
 		'mode': 'shipping',
 		'telephone': '999-999-9999',
@@ -53,10 +47,11 @@ class SaleOrder(osv.osv):
 		'street': address.street,
 		'city': address.city,
 		'region': address.state_id.name,
-		'region_id': self.get_magento_region_id(cr, uid, address.country_id.code, address.state_id.name),
+		'region_id': integrator_obj.get_magento_region_id(cr, uid, credentials, address.country_id.code, address.state_id.name),
 		'postcode': address.zip,
 		'country_id': address.country_id.code,
 	}
+
 	return [shipping_data]
 
 
@@ -66,10 +61,10 @@ class SaleOrder(osv.osv):
 	#Get Username/Pass
 	#TODO. Think about security here
 	integrator_obj = self.pool.get('mage.integrator')
-	credentials = integrator_obj.get_external_credentials()
+	credentials = integrator_obj.get_external_credentials(cr, uid)
 
 	customer_data = self.prepare_cart_customer_data(cr, uid, sale)
-	shipping_data = self.prepare_cart_shipping_data(cr, uid, sale.partner_shipping_id)
+	shipping_data = self.prepare_cart_shipping_data(cr, uid, integrator_obj, credentials, sale.partner_shipping_id)
 	items = self.prepare_cart_items(cr, uid, sale.order_line)
 	
 	cart_id = self.create_mage_cart(credentials)
@@ -142,6 +137,7 @@ class SaleOrderRateQuote(osv.osv):
         'carrier': fields.selection([('ups', 'UPS'),
                                 ('usps', 'US Postal Service'),
                                 ('fedex', 'FedEx'),
+				('freeshipping', 'Free Shipping'),
 				('qquoteshiprate', 'Custom'),
 				('storepickupmodule', 'Store Pickup'),
 				('customshipprice', 'Custom'),
